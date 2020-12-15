@@ -31,7 +31,7 @@ int ventillationOnRoom2 = 0; // ventillation state
 bool freshAirIsOnRoom2 = true;
 
 void setup() {
-  Serial.begin(19200);
+  Serial.begin(9600);
   
   pinMode(RELAY_LIGHT_ROOM1, OUTPUT);
   pinMode(RELAY_LIGHT_ROOM2, OUTPUT);
@@ -52,8 +52,8 @@ void loop() {
     getCommands();
   }
   
-  // Each 5 seconds
-  if (currentMillis % 5000 == 0) {
+  // Each 15 seconds
+  if (currentMillis % 15000 == 0) {
     // Ventillation system Room 1
     // Autonomous loop
     if (ventillationOnRoom1) {
@@ -86,7 +86,7 @@ void loop() {
     float measuredIlluminance1 = convertIlluminance(analogRead(LIGHT_SENSOR_ROOM1));
     float measuredIlluminance2 = convertIlluminance(analogRead(LIGHT_SENSOR_ROOM2));
 
-//    sendSensorData(measuredTemperature1, measuredIlluminance1, measuredTemperature2, measuredIlluminance2);
+    sendSensorData(measuredTemperature1, measuredIlluminance1, measuredTemperature2, measuredIlluminance2);
   }
 }
 
