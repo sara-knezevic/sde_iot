@@ -40,11 +40,14 @@ def getCommandEmails():
 
     return commands
 
-commands = getCommandEmails()
-if (len(commands) > 0):
-    device, state, room = commands[-1].split('-')
-    convertDevice = sheet[device]
-    convertState = sheet[state]
-    convertRoom = sheet[room]
+def translateCommandsAndSend(serialPort):
+    commands = getCommandEmails()
+    if (len(commands) > 0):
+        device, state, room = commands[-1].split('-')
+        convertDevice = sheet[device]
+        convertState = sheet[state]
+        convertRoom = sheet[room]
 
-    Commander.sendCommand(convertDevice, convertRoom, convertState)
+        Commander.sendCommand(serialPort, convertDevice, convertRoom, convertState)
+
+    time.sleep(1)

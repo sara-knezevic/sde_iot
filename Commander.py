@@ -3,11 +3,7 @@ import time
 import serial
 import struct
 
-def sendCommand(device, room, state):
-    serialPort = serial.Serial("COM2", baudrate=9600)
-
+def sendCommand(serialPort, device, room, state):
     message = struct.pack('>BBB', device, room, state)
     serialPort.write(message)
     serialPort.flush()
-
-    serialPort.close()

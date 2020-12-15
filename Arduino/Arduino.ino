@@ -146,6 +146,13 @@ void ventillationState(int room, int state) {
       ventillationOnRoom1 = state;
       if (state == 1) {
         analogWrite(EN_ROOM1, 255);
+        if (freshAirIsOnRoom1) {
+          airSuction(DC_PIN1_ROOM1, DC_PIN2_ROOM1, false);
+          freshAir(DC_PIN1_ROOM1, DC_PIN2_ROOM1, true);
+        } else {
+          freshAir(DC_PIN1_ROOM1, DC_PIN2_ROOM1, false);
+          airSuction(DC_PIN1_ROOM1, DC_PIN2_ROOM1, true);
+        }
       } else {
         analogWrite(EN_ROOM1, 0);
       }
@@ -153,6 +160,13 @@ void ventillationState(int room, int state) {
       ventillationOnRoom2 = state;
       if (state == 1) {
         analogWrite(EN_ROOM2, 255);
+        if (freshAirIsOnRoom2) {
+          airSuction(DC_PIN1_ROOM2, DC_PIN2_ROOM2, false);
+          freshAir(DC_PIN1_ROOM2, DC_PIN2_ROOM2, true);
+        } else {
+          freshAir(DC_PIN1_ROOM2, DC_PIN2_ROOM2, false);
+          airSuction(DC_PIN1_ROOM2, DC_PIN2_ROOM2, true);
+        }
       } else {
         analogWrite(EN_ROOM2, 0);
       } 
@@ -204,8 +218,11 @@ float voltageToTemperature(int voltage) {
 }
 
 float convertIlluminance(int lightVoltage) {
-  float resistorVoltage = (float)lightVoltage / (1023.0 * 5.0);
-  float ldrVoltage = 5.0 - resistorVoltage;
-  float ldrResistance = ldrVoltage / resistorVoltage * 10.0;
-  return ldrResistance;
+  float MAX_ADC_READING = 1023.0;
+  float ADC_REF = 5.0;
+  float resistorVoltage = (float)lightVoltage / (MAX_ADC_READING * ADC_REF);
+  float ldrVoltage = ADC_REF - resistorVoltage;
+  float ldrResistance = ldrVoltage /resistorVoltage * 5.0;
+  float lux = 28704689.27 * pow(ldrResistance, -2.415); 
+  return lux;
 }
