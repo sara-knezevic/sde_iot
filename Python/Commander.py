@@ -1,3 +1,5 @@
+# Function that sends command from e-mail to Arduino.
+
 import imaplib
 import time
 import serial
