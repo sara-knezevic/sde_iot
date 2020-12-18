@@ -9,12 +9,11 @@ def send_email(source, destination, message):
         print ("Login failed.")
         return
 
-    subject = "Subject: {}".format(message.split()[0])
+    subject = "Subject: {}".format(message.split("\r\n", 1)[0])
+    body = ' '.join(message.split("\r\n", 2)[1:])
 
-    message = subject
+    message = subject + "\r\n" + body
 
-    server.sendmail(source, destination, message)
+    server.sendmail(source, destination, message.encode('utf-8'))
 
     server.quit()
-
-send_email("lost.func@gmail.com", "lost.func@gmail.com", "LIGHT-ON-ROOM1")

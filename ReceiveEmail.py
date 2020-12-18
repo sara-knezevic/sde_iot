@@ -3,7 +3,7 @@ import time
 import serial
 import struct
 import re
-import Commander
+import Commander, GenerateReport
 
 mail = imaplib.IMAP4_SSL("imap.gmail.com")
 mail.login("lost.func@gmail.com", "rgzekyhzyfryrdbe")
@@ -15,21 +15,21 @@ sheet = {
     "ROOM2" : 2,
     "ON" : 1,
     "OFF" : 0
-    # GET REPORT
 }
 
-commands = []
 filterRegex = re.compile(r'([A-Z])*-[A-Z]*-[A-Z]*\d+')
 
 def getCommandEmails():
+    commands = []
+
     mail.select("inbox")
-    result, data = mail.uid('search', None, "UNSEEN")
+    _, data = mail.uid('search', None, "UNSEEN")
     all_messages = len(data[0].split())
 
     for msg in range(all_messages):
         
         latest_email_uid = data[0].split()[msg]
-        result, email_data = mail.uid('fetch', latest_email_uid, '(RFC822)')
+        _, email_data = mail.uid('fetch', latest_email_uid, '(RFC822)')
         raw_email = email_data[0][1]
         raw_email_string = raw_email.decode('utf-8')
         email_message = email.message_from_string(raw_email_string)
@@ -37,17 +37,28 @@ def getCommandEmails():
 
         if filterRegex.match(subject):
             commands.append(subject)
+        elif subject == "GET-REPORT":
+            commands.append("GET-REPORT")
+        else:
+            mail.uid('STORE', latest_email_uid, "-FLAGS", '(\\Seen)')
 
     return commands
 
 def translateCommandsAndSend(serialPort):
     commands = getCommandEmails()
-    if (len(commands) > 0):
-        device, state, room = commands[-1].split('-')
-        convertDevice = sheet[device]
-        convertState = sheet[state]
-        convertRoom = sheet[room]
+    for command in commands:
+        if (command == "GET-REPORT"):
+            GenerateReport.sendReport(serialPort)
+            continue
+        
+        try:
+            device, state, room = command.split('-')
+            convertDevice = sheet[device]
+            convertState = sheet[state]
+            convertRoom = sheet[room]
+            Commander.sendCommand(serialPort, convertDevice, convertRoom, convertState)
+        except Exception:
+            print ("Oops! Key error. Please check device, state, or room number.")
+            pass
 
-        Commander.sendCommand(serialPort, convertDevice, convertRoom, convertState)
-
-    time.sleep(1)
+    # time.sleep(1)
