@@ -1,3 +1,5 @@
+# Function for sending e-mail.
+
 import smtplib
 
 def send_email(source, destination, message):
@@ -10,7 +12,7 @@ def send_email(source, destination, message):
         return
 
     subject = "Subject: {}".format(message.split("\r\n", 1)[0])
-    body = ' '.join(message.split("\r\n", 2)[1:])
+    body = ' '.join(message.split("\r\n", 1)[1:])
 
     message = subject + "\r\n" + body
 

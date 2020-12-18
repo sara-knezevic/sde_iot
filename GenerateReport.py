@@ -1,8 +1,13 @@
+# Functions used for reading data from thingspeak
+# and generating a report and sending it over e-mail
+# each 10 minutes (from main.py) or on command.
+
 import http.client, urllib
 import time, json, struct
 import serial, SendEmail
 import Communication
 
+# ThingSpeak read API key.
 READ_KEY = 'SXQT97OOEOE60HB0'
 
 deviceStatusSheet = {
@@ -10,19 +15,24 @@ deviceStatusSheet = {
     1 : "ON"
 }
 
+# Fetch data from thingspeak!
 def readSensorData(numOfResults):
     connection = http.client.HTTPSConnection("api.thingspeak.com")
 
+    # Read entire channel.
     urlChannel = "/channels/1250625/feeds.json?api_key={}&results={}".format(READ_KEY, numOfResults)
 
     connection.request("GET", urlChannel)
     response = connection.getresponse()
     data = response.read()
+    # Take "feeds" only as it contains the sensor data.
     channelData = json.loads(data.decode('utf-8'))["feeds"]
 
+    # Initialize average sensor values.
     roomOneTempAvg = roomOneIlluminanceAvg = 0.0
     roomTwoTempAvg = roomTwoIlluminanceAvg = 0.0
 
+    # Add up the data from thingspeak (numOfResults).
     for feed in channelData:
         roomOneTempAvg += float(feed["field1"])
         roomOneIlluminanceAvg += float(feed["field2"])
@@ -31,6 +41,7 @@ def readSensorData(numOfResults):
 
     dataExtractedNum = len(channelData)
 
+    # Calculate average sensor values.
     if (dataExtractedNum):
         roomOneTempAvg /= dataExtractedNum
         roomOneIlluminanceAvg /= dataExtractedNum
@@ -43,12 +54,13 @@ def readSensorData(numOfResults):
 
     return roomOneTempAvg, roomOneIlluminanceAvg, roomTwoTempAvg, roomTwoIlluminanceAvg
 
+# Ask Arduino to send device statuses!
 def askDeviceStatus(serialPort):
     message = struct.pack('>BBB', 0, 0, 0)
     serialPort.write(message)
     serialPort.flush()
-    # time.sleep(1)
 
+# Gather and calculate data, get device states, compose message and send report over e-mail.
 def sendReport(serialPort):
     roomOneTempAvg, roomOneIlluminanceAvg, roomTwoTempAvg, roomTwoIlluminanceAvg = readSensorData(10)
 
